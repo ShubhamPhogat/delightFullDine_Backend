@@ -5,53 +5,65 @@ import jwt from "jsonwebtoken";
 const userSchema = new mongoose.Schema({
   userName: {
     type: String,
-    require: true,
+    required: true,
     unique: true,
   },
   email: {
     type: String,
-    require: true,
+    required: true,
     unique: true,
   },
   password: {
     type: String,
-    require: true,
+    required: true,
   },
   phone: {
     type: Number,
-    require: true,
+    required: true,
     unique: true,
   },
   firstName: {
     type: String,
-    require: true,
+    required: true,
   },
   lastName: {
     type: String,
   },
   role: {
     type: String,
-    enum: ["Admin", "User"],
     default: "User",
   },
-  wishList: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Book",
-    default: [],
-  },
+  wishList: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+      quantity: {
+        type: Number,
+        default: 1,
+      },
+    },
+  ],
   refresToken: {
     type: String,
     default: "",
   },
 });
 
-userSchema.pre("save", function async(next) {
+// Fix the async middleware - this was causing the silent hang
+userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
-    const hashedPassword = bcrypt.hash(this.password, 10);
-    this.password = hashedPassword;
-    next();
+    try {
+      const hashedPassword = await bcrypt.hash(this.password, 10);
+      this.password = hashedPassword;
+    } catch (error) {
+      return next(error);
+    }
   }
+  next();
 });
+
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -65,6 +77,7 @@ userSchema.methods.generateAccessToken = function () {
     }
   );
 };
+
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {

@@ -10,7 +10,7 @@ export const registerUser = async (req, res) => {
     role = "user";
   }
 
-  if (!firstName || !lastName || !email || !userName || !phone || !password) {
+  if (!firstName || !email || !userName || !phone || !password) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -22,7 +22,6 @@ export const registerUser = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = await new User({
     firstName,
-    lastName,
     email,
     userName,
     phone,

@@ -7,6 +7,6 @@ import {
 const orderRouter = express.Router();
 
 orderRouter.post("/create", createOrder);
-orderRouter.get("/:id", getOrdersbyUserId);
+orderRouter.get("/get/:id", getOrdersbyUserId);
 
 export default orderRouter;
