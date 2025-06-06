@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs"; // Changed to bcryptjs to match controller
 import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema({
@@ -45,24 +45,15 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
-  refresToken: {
+  refreshToken: {
+    // Fixed typo: was 'refresToken'
     type: String,
     default: "",
   },
 });
 
-// Fix the async middleware - this was causing the silent hang
-userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    try {
-      const hashedPassword = await bcrypt.hash(this.password, 10);
-      this.password = hashedPassword;
-    } catch (error) {
-      return next(error);
-    }
-  }
-  next();
-});
+// REMOVED THE PRE-SAVE HOOK - This was causing double hashing!
+// Since you're manually hashing in the controller, we don't need this
 
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
